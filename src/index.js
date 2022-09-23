@@ -36,7 +36,7 @@ function onInput() {
   let searchEl = inputEl.value;
   if (searchEl.trim() === '') {
     searchBtn.disabled = true;
-    clearMarkup(gallery);
+
     moreBtn.classList.add('visually-hidden');
     return;
   } else {
