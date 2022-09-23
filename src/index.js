@@ -21,9 +21,7 @@ inputEl.addEventListener('input', onInput);
 async function loadMoreCards(searchValue) {
   page += 1;
   const data = await getPhoto(searchValue, page);
-  data.hits.forEach(photo => {
-    createCardMarkup(photo);
-  });
+  createCardMarkup(data.hits);
   if (page === totalPages) {
     moreBtn.classList.add('visually-hidden');
     Notiflix.Notify.failure(
@@ -73,47 +71,74 @@ async function mountData(searchValue) {
       gallery.innerHTML = '';
     }
 
-    data.hits.forEach(photo => {
-      createCardMarkup(photo);
-    });
+    createCardMarkup(data.hits);
   } catch (error) {
     console.log(error);
   }
 }
 
-function createCardMarkup({
-  webformatURL,
-  largeImageURL,
-  tags,
-  likes,
-  views,
-  comments,
-  downloads,
-}) {
-  gallery.insertAdjacentHTML(
-    'beforeend',
-    `<div class="photo-card">
-    <a href="${largeImageURL}"><img src=${webformatURL} alt="${tags}" loading="lazy" width = "320px" height = "230px"/>
-    </a>
-     <div class="info">
-    <p class="info-item">
-      <b>Likes:</b><span>${likes}</span>
-    </p>
-    <p class="info-item">
-      <b>Views:</b><span>${views}</span>
-    </p>
-    <p class="info-item">
-      <b>Comments:</b><span>${comments}</span>
-    </p>
-    <p class="info-item">
-      <b>Download:</b><span>${downloads}</span>
-    </p>
-  </div>
-</div>`,
-    lightbox.refresh()
-  );
+function createCardMarkup(images) {
+  console.log(images, 'images');
+  const markup = images
+    .map(image => {
+      console.log('img', image);
+      return `<div class="photo-card">
+       <a href="${image.largeImageURL}"><img class="photo" src="${image.webformatURL}" 
+          alt="${image.tags}" title="${image.tags}" loading="lazy" width = "320px" height = "230px"/></a>
+        <div class="info">
+           <p class="info-item">
+           <b>Likes</b> <span class="info-item-api"> ${image.likes} </span>
+           </p>
+            <p class="info-item">
+                <b>Views</b> <span class="info-item-api">${image.views}</span>  
+            </p>
+            <p class="info-item">
+                <b>Comments</b> <span class="info-item-api">${image.comments}</span>  
+            </p>
+            <p class="info-item">
+                <b>Downloads</b> <span class="info-item-api">${image.downloads}</span> 
+            </p>
+        </div>
+    </div>`;
+    })
+    .join('');
+  gallery.innerHTML += markup;
+  lightbox.refresh();
 }
 
 function clearMarkup(element) {
   element.innerHTML = '';
 }
+
+// function createCardMarkup({
+//   webformatURL,
+//   largeImageURL,
+//   tags,
+//   likes,
+//   views,
+//   comments,
+//   downloads,
+// }) {
+//   gallery.insertAdjacentHTML(
+//     'beforeend',
+//     `<div class="photo-card">
+//     <a href="${largeImageURL}"><img src=${webformatURL} alt="${tags}" loading="lazy" width = "320px" height = "230px"/>
+//     </a>
+//      <div class="info">
+//     <p class="info-item">
+//       <b>Likes:</b><span>${likes}</span>
+//     </p>
+//     <p class="info-item">
+//       <b>Views:</b><span>${views}</span>
+//     </p>
+//     <p class="info-item">
+//       <b>Comments:</b><span>${comments}</span>
+//     </p>
+//     <p class="info-item">
+//       <b>Download:</b><span>${downloads}</span>
+//     </p>
+//   </div>
+// </div>`,
+//     lightbox.refresh()
+//   );
+// }
