@@ -14,10 +14,23 @@ const searchBtn = document.querySelector('.form__btn');
 const totalPages = Math.ceil(500 / itemPerPage);
 let page = 1;
 let lightbox = new SimpleLightbox('.gallery a');
+let searchValue = '';
 
 formEl.addEventListener('submit', onSubmit);
-inputEl.addEventListener('input', onInput);
 
+function onSubmit(event) {
+  event.preventDefault();
+
+  clearMarkup(gallery);
+
+  searchValue = event.currentTarget.elements.searchQuery.value.trim();
+
+  if (searchValue === '') {
+    return;
+  } else {
+    mountData(searchValue);
+  }
+}
 async function loadMoreCards(searchValue) {
   page += 1;
   const data = await getPhoto(searchValue, page);
@@ -30,36 +43,14 @@ async function loadMoreCards(searchValue) {
   }
 }
 
-function onInput() {
-  let searchEl = inputEl.value;
-  if (searchEl.trim() === '') {
-    searchBtn.disabled = true;
-
-    moreBtn.classList.add('visually-hidden');
-    return;
-  } else {
-    searchBtn.disabled = false;
-  }
-}
-
-function onSubmit(event) {
-  event.preventDefault();
-
-  clearMarkup(gallery);
-
-  const searchValue = event.currentTarget[0].value;
-  mountData(searchValue);
-}
-
 async function mountData(searchValue) {
   try {
     const data = await getPhoto(searchValue, page);
     const totalHits = data.totalHits;
 
     moreBtn.classList.remove('visually-hidden');
-    moreBtn.addEventListener('click', () => {
-      loadMoreCards(searchValue);
-    });
+    moreBtn.removeEventListener('click', listenerCallback);
+    moreBtn.addEventListener('click', listenerCallback);
 
     if (data.hits.length === 0) {
       moreBtn.classList.add('visually-hidden');
@@ -69,12 +60,17 @@ async function mountData(searchValue) {
     } else {
       Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
       gallery.innerHTML = '';
+      createCardMarkup(data.hits);
     }
-
-    createCardMarkup(data.hits);
   } catch (error) {
-    console.log(error);
+    Notiflix.Notify.failure(
+      '"Sorry, there are no images matching your search query. Please try again."'
+    );
   }
+}
+
+function listenerCallback() {
+  loadMoreCards(searchValue);
 }
 
 function createCardMarkup(images) {
